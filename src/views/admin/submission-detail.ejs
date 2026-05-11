@@ -1,0 +1,140 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6 animate-in">
+    <a href="/admin/submissions" class="text-sm text-mid hover:text-brand transition-colors">&larr; Back to submissions</a>
+    <h1 class="font-serif text-2xl italic mt-2" style="color: var(--brand-dark);">Submission Detail</h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Status bar -->
+    <div class="lg:col-span-3 card p-5 flex items-center justify-between animate-in animate-in-delay-1">
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-mid">Status</span>
+        <span class="badge
+          <%= submission.status === 'COMPLETE' ? 'badge-success' : '' %>
+          <%= submission.status === 'FAILED' ? 'badge-error' : '' %>
+          <%= submission.status === 'PROCESSING' ? 'badge-warning' : '' %>
+        "><%= submission.status %></span>
+      </div>
+      <span class="text-sm text-mid"><%= submission.createdAt.toLocaleString('en-NZ') %></span>
+    </div>
+
+    <!-- Lead Info -->
+    <div class="lg:col-span-2 card p-6 animate-in animate-in-delay-2">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-mid mb-4">Lead Information</h2>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Name</dt>
+          <dd class="font-medium"><%= submission.leadFirstName %> <%= submission.leadLastName %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Phone</dt>
+          <dd class="font-medium"><%= submission.leadPhone %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Email</dt>
+          <dd class="font-medium"><%= submission.leadEmail %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Organisation</dt>
+          <dd class="font-medium"><%= submission.organisation || '—' %></dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="text-mid text-xs mb-0.5">Address</dt>
+          <dd class="font-medium"><%= [submission.addressLine, submission.city, submission.state, submission.postalCode, submission.country].filter(Boolean).join(', ') || '—' %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Lead Source</dt>
+          <dd class="font-medium"><%= submission.leadSource.label %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Category</dt>
+          <dd class="font-medium"><%= submission.category.label %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Submission Meta -->
+    <div class="card p-6 animate-in animate-in-delay-2">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-mid mb-4">Details</h2>
+      <dl class="space-y-3 text-sm">
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Salesperson</dt>
+          <dd class="font-medium"><%= submission.salesperson.name %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">GHL Contact</dt>
+          <dd class="font-mono text-xs"><%= submission.ghlContactId || '—' %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">GHL Opportunity</dt>
+          <dd class="font-mono text-xs"><%= submission.ghlOpportunityId || '—' %></dd>
+        </div>
+        <div>
+          <dt class="text-mid text-xs mb-0.5">Webhook Status</dt>
+          <dd class="font-medium"><%= submission.webhookResponseStatus || '—' %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Notes -->
+    <div class="lg:col-span-3 card p-6 animate-in animate-in-delay-3">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-mid mb-3">Notes</h2>
+      <p class="text-sm whitespace-pre-wrap leading-relaxed"><%= submission.notes %></p>
+    </div>
+
+    <!-- Event Log -->
+    <div class="lg:col-span-3 card p-6 animate-in animate-in-delay-3">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-mid mb-4">Event Log</h2>
+
+      <% if (submission.events.length === 0) { %>
+      <p class="text-sm text-mid">No events recorded.</p>
+      <% } else { %>
+      <div class="space-y-3">
+        <% submission.events.forEach(function(event) { %>
+        <div class="rounded-lg p-4 border <%= event.succeeded ? 'border-emerald-100 bg-emerald-50/50' : 'border-red-100 bg-red-50/50' %>">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <% if (event.succeeded) { %>
+              <div class="w-5 h-5 rounded-full flex items-center justify-center bg-emerald-100">
+                <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <% } else { %>
+              <div class="w-5 h-5 rounded-full flex items-center justify-center bg-red-100">
+                <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+              </div>
+              <% } %>
+              <span class="text-sm font-medium"><%= event.step.replace(/_/g, ' ') %></span>
+              <% if (event.responseStatus) { %>
+              <span class="text-xs text-mid">HTTP <%= event.responseStatus %></span>
+              <% } %>
+            </div>
+            <span class="text-xs text-mid"><%= event.createdAt.toLocaleString('en-NZ') %></span>
+          </div>
+
+          <% if (event.errorMessage) { %>
+          <p class="text-xs text-red-700 mt-2"><%= event.errorMessage %></p>
+          <% } %>
+
+          <% if (event.responseBody) { %>
+          <details class="mt-2">
+            <summary class="text-xs text-mid cursor-pointer hover:text-brand">Response body</summary>
+            <pre class="mt-1.5 text-xs bg-white p-3 rounded-lg border border-warm overflow-x-auto max-h-32"><%= event.responseBody %></pre>
+          </details>
+          <% } %>
+
+          <% if (!event.succeeded) { %>
+          <form method="POST" action="/admin/submissions/<%= submission.id %>/retry/<%= event.step %>" class="mt-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn-primary text-xs py-1.5 px-3">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Retry
+            </button>
+          </form>
+          <% } %>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</div>

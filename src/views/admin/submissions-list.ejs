@@ -1,0 +1,98 @@
+<div class="max-w-6xl mx-auto">
+  <div class="mb-6 animate-in">
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">All Submissions</h1>
+    <p class="text-mid text-sm mt-1"><%= total %> total submissions</p>
+  </div>
+
+  <div class="card p-4 mb-6 animate-in animate-in-delay-1">
+    <form method="GET" action="/admin/submissions" class="flex flex-wrap gap-3 items-end">
+      <div>
+        <label class="block text-xs font-medium text-mid mb-1">Staff</label>
+        <select name="staff" class="input-field text-sm py-1.5">
+          <option value="">All</option>
+          <% staffList.forEach(function(s) { %>
+          <option value="<%= s.id %>" <%= filters.staff === s.id ? 'selected' : '' %>><%= s.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-mid mb-1">Category</label>
+        <select name="category" class="input-field text-sm py-1.5">
+          <option value="">All</option>
+          <% categories.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= filters.category === c.id ? 'selected' : '' %>><%= c.label %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-mid mb-1">Status</label>
+        <select name="status" class="input-field text-sm py-1.5">
+          <option value="">All</option>
+          <option value="COMPLETE" <%= filters.status === 'COMPLETE' ? 'selected' : '' %>>Complete</option>
+          <option value="FAILED" <%= filters.status === 'FAILED' ? 'selected' : '' %>>Failed</option>
+          <option value="PROCESSING" <%= filters.status === 'PROCESSING' ? 'selected' : '' %>>Processing</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-mid mb-1">From</label>
+        <input type="date" name="from" value="<%= filters.from || '' %>" class="input-field text-sm py-1.5">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-mid mb-1">To</label>
+        <input type="date" name="to" value="<%= filters.to || '' %>" class="input-field text-sm py-1.5">
+      </div>
+      <button type="submit" class="btn-primary py-1.5 px-4">Filter</button>
+      <a href="/admin/submissions" class="btn-secondary py-1.5 px-4">Clear</a>
+    </form>
+  </div>
+
+  <div class="card overflow-hidden animate-in animate-in-delay-2">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Lead</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Staff</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Category</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (submissions.length === 0) { %>
+        <tr><td colspan="5" class="px-5 py-10 text-center text-mid">No submissions match your filters.</td></tr>
+        <% } %>
+        <% submissions.forEach(function(sub) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors">
+          <td class="px-5 py-3.5">
+            <a href="/admin/submissions/<%= sub.id %>" class="font-medium text-brand hover:underline">
+              <%= sub.leadFirstName %> <%= sub.leadLastName %>
+            </a>
+          </td>
+          <td class="px-5 py-3.5 text-mid"><%= sub.salesperson.name %></td>
+          <td class="px-5 py-3.5 text-mid"><%= sub.category.label %></td>
+          <td class="px-5 py-3.5">
+            <span class="badge
+              <%= sub.status === 'COMPLETE' ? 'badge-success' : '' %>
+              <%= sub.status === 'FAILED' ? 'badge-error' : '' %>
+              <%= sub.status === 'PROCESSING' ? 'badge-warning' : '' %>
+            "><%= sub.status %></span>
+          </td>
+          <td class="px-5 py-3.5 text-mid"><%= sub.createdAt.toLocaleString('en-NZ') %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if (totalPages > 1) { %>
+  <div class="flex justify-center gap-1 mt-6">
+    <% for (var p = 1; p <= totalPages; p++) { %>
+    <a href="/admin/submissions?page=<%= p %><%= filters.staff ? '&staff=' + filters.staff : '' %><%= filters.category ? '&category=' + filters.category : '' %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.from ? '&from=' + filters.from : '' %><%= filters.to ? '&to=' + filters.to : '' %>"
+       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors
+         <%= p === page ? 'bg-brand text-white' : 'text-mid hover:bg-gray-100' %>">
+      <%= p %>
+    </a>
+    <% } %>
+  </div>
+  <% } %>
+</div>

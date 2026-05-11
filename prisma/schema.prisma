@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  ADMIN
+}
+
+enum SubmissionStatus {
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+enum SubmissionStep {
+  GHL_CONTACT
+  GHL_TAG
+  GHL_CONTACT_NOTE
+  STAFF_WEBHOOK
+  GHL_OPPORTUNITY
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  ghlUserId    String    @map("ghl_user_id")
+  webhookUrl   String?   @map("webhook_url")
+  role         Role      @default(STAFF)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  magicLinks   MagicLinkToken[]
+  sessions     Session[]
+  submissions  Submission[]
+
+  @@map("users")
+}
+
+model MagicLinkToken {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique @map("token_hash")
+  userId     String    @map("user_id")
+  expiresAt  DateTime  @map("expires_at")
+  usedAt     DateTime? @map("used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("magic_link_tokens")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  expiresAt   DateTime @map("expires_at")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model InsuranceCategory {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  label         String
+  utmCampaign   String   @map("utm_campaign")
+  sortOrder     Int      @default(0) @map("sort_order")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  submissions   Submission[]
+
+  @@map("insurance_categories")
+}
+
+model LeadSource {
+  id          String   @id @default(cuid())
+  label       String   @unique
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  submissions Submission[]
+
+  @@map("lead_sources")
+}
+
+model Submission {
+  id                    String            @id @default(cuid())
+  salespersonUserId     String            @map("salesperson_user_id")
+  insuranceCategoryId   String            @map("insurance_category_id")
+  leadSourceId          String            @map("lead_source_id")
+
+  leadFirstName         String            @map("lead_first_name")
+  leadLastName          String            @map("lead_last_name")
+  leadEmail             String            @map("lead_email")
+  leadPhone             String            @map("lead_phone")
+  organisation          String?
+  addressLine           String?           @map("address_line")
+  city                  String?
+  state                 String?
+  country               String?           @default("NZ")
+  postalCode            String?           @map("postal_code")
+  notes                 String
+
+  status                SubmissionStatus  @default(PROCESSING)
+  ghlContactId          String?           @map("ghl_contact_id")
+  ghlOpportunityId      String?           @map("ghl_opportunity_id")
+  webhookResponseStatus Int?              @map("webhook_response_status")
+
+  createdAt             DateTime          @default(now()) @map("created_at")
+  completedAt           DateTime?         @map("completed_at")
+
+  salesperson           User              @relation(fields: [salespersonUserId], references: [id])
+  category              InsuranceCategory @relation(fields: [insuranceCategoryId], references: [id])
+  leadSource            LeadSource        @relation(fields: [leadSourceId], references: [id])
+  events                SubmissionEvent[]
+
+  @@index([salespersonUserId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("submissions")
+}
+
+model SubmissionEvent {
+  id              String          @id @default(cuid())
+  submissionId    String          @map("submission_id")
+  step            SubmissionStep
+  succeeded       Boolean
+  responseStatus  Int?            @map("response_status")
+  responseBody    String?         @map("response_body")
+  errorMessage    String?         @map("error_message")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  submission      Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("submission_events")
+}

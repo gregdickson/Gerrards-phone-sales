@@ -1,0 +1,64 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 animate-in">
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Lead Sources</h1>
+    <p class="text-mid text-sm mt-1">Manage the lead source options shown on the form</p>
+  </div>
+
+  <div class="card overflow-hidden mb-6 animate-in animate-in-delay-1">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Order</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Label</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% leadSources.forEach(function(src) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors <%= !src.isActive ? 'opacity-50' : '' %>">
+          <td class="px-5 py-3.5 text-mid"><%= src.sortOrder %></td>
+          <td class="px-5 py-3.5 font-medium"><%= src.label %></td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= src.isActive ? 'badge-success' : 'badge-error' %>"><%= src.isActive ? 'Active' : 'Inactive' %></span>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <a href="/admin/lead-sources?edit=<%= src.id %>" class="text-brand hover:underline text-sm">Edit</a>
+              <form method="POST" action="/admin/lead-sources/<%= src.id %>" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="text-mid hover:text-brand text-sm transition-colors">
+                  <%= src.isActive ? 'Deactivate' : 'Activate' %>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <%
+    var editSrc = null;
+    if (editId) { leadSources.forEach(function(s) { if (s.id === editId) editSrc = s; }); }
+  %>
+
+  <div class="card p-6 animate-in animate-in-delay-2">
+    <h2 class="font-medium mb-4"><%= editSrc ? 'Edit' : 'Add' %> Lead Source</h2>
+    <form method="POST" action="/admin/lead-sources" class="flex flex-wrap gap-4 items-end">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (editSrc) { %><input type="hidden" name="id" value="<%= editSrc.id %>"><% } %>
+      <div class="flex-1 min-w-[200px]">
+        <label for="label" class="block text-sm font-medium mb-1.5">Label *</label>
+        <input type="text" id="label" name="label" required value="<%= editSrc ? editSrc.label : '' %>" class="input-field">
+      </div>
+      <div class="w-24">
+        <label for="sort_order" class="block text-sm font-medium mb-1.5">Order</label>
+        <input type="number" id="sort_order" name="sort_order" value="<%= editSrc ? editSrc.sortOrder : '' %>" class="input-field">
+      </div>
+      <button type="submit" class="btn-primary"><%= editSrc ? 'Update' : 'Add' %></button>
+      <% if (editSrc) { %><a href="/admin/lead-sources" class="btn-secondary">Cancel</a><% } %>
+    </form>
+  </div>
+</div>

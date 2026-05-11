@@ -1,0 +1,73 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6 animate-in">
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Insurance Categories</h1>
+    <p class="text-mid text-sm mt-1">Manage the categories shown on the landing page</p>
+  </div>
+
+  <div class="card overflow-hidden mb-6 animate-in animate-in-delay-1">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Order</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Label</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Slug</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">UTM</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% categories.forEach(function(cat) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors <%= !cat.isActive ? 'opacity-50' : '' %>">
+          <td class="px-5 py-3.5 text-mid"><%= cat.sortOrder %></td>
+          <td class="px-5 py-3.5 font-medium"><%= cat.label %></td>
+          <td class="px-5 py-3.5 text-mid font-mono text-xs"><%= cat.slug %></td>
+          <td class="px-5 py-3.5 text-mid font-mono text-xs"><%= cat.utmCampaign %></td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= cat.isActive ? 'badge-success' : 'badge-error' %>"><%= cat.isActive ? 'Active' : 'Inactive' %></span>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <a href="/admin/categories?edit=<%= cat.id %>" class="text-brand hover:underline text-sm">Edit</a>
+              <form method="POST" action="/admin/categories/<%= cat.id %>" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="action" value="toggle">
+                <button type="submit" class="text-mid hover:text-brand text-sm transition-colors">
+                  <%= cat.isActive ? 'Deactivate' : 'Activate' %>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <%
+    var editCat = null;
+    if (editId) { categories.forEach(function(c) { if (c.id === editId) editCat = c; }); }
+  %>
+
+  <div class="card p-6 animate-in animate-in-delay-2">
+    <h2 class="font-medium mb-4"><%= editCat ? 'Edit' : 'Add' %> Category</h2>
+    <form method="POST" action="/admin/categories" class="flex flex-wrap gap-4 items-end">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (editCat) { %><input type="hidden" name="id" value="<%= editCat.id %>"><% } %>
+      <div class="flex-1 min-w-[160px]">
+        <label for="label" class="block text-sm font-medium mb-1.5">Label *</label>
+        <input type="text" id="label" name="label" required value="<%= editCat ? editCat.label : '' %>" class="input-field">
+      </div>
+      <div class="flex-1 min-w-[160px]">
+        <label for="utm_campaign" class="block text-sm font-medium mb-1.5">UTM Campaign</label>
+        <input type="text" id="utm_campaign" name="utm_campaign" value="<%= editCat ? editCat.utmCampaign : '' %>" placeholder="Auto from label" class="input-field">
+      </div>
+      <div class="w-24">
+        <label for="sort_order" class="block text-sm font-medium mb-1.5">Order</label>
+        <input type="number" id="sort_order" name="sort_order" value="<%= editCat ? editCat.sortOrder : '' %>" class="input-field">
+      </div>
+      <button type="submit" class="btn-primary"><%= editCat ? 'Update' : 'Add' %></button>
+      <% if (editCat) { %><a href="/admin/categories" class="btn-secondary">Cancel</a><% } %>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,93 @@
+<div class="max-w-lg mx-auto animate-in">
+  <div class="card p-8">
+    <% if (submission.status === 'COMPLETE') { %>
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4" style="background: #ecfdf5;">
+        <svg class="w-8 h-8" style="color: #059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Submission Complete</h1>
+      <p class="text-mid text-sm mt-1">Lead has been sent to GHL successfully</p>
+    </div>
+    <% } else if (submission.status === 'FAILED') { %>
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4" style="background: #fef2f2;">
+        <svg class="w-8 h-8" style="color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </div>
+      <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Submission Failed</h1>
+      <p class="text-mid text-sm mt-1">An admin will review and retry the failed steps</p>
+    </div>
+    <% } else { %>
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4" style="background: #fffbeb;">
+        <svg class="w-8 h-8 animate-spin" style="color: #d97706;" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </div>
+      <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Processing...</h1>
+    </div>
+    <% } %>
+
+    <div class="border-t border-warm pt-5 space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-mid">Lead</span>
+        <span class="font-medium"><%= submission.leadFirstName %> <%= submission.leadLastName %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-mid">Category</span>
+        <span class="font-medium"><%= submission.category.label %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-mid">Lead Source</span>
+        <span class="font-medium"><%= submission.leadSource.label %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-mid">Status</span>
+        <span class="badge
+          <%= submission.status === 'COMPLETE' ? 'badge-success' : '' %>
+          <%= submission.status === 'FAILED' ? 'badge-error' : '' %>
+          <%= submission.status === 'PROCESSING' ? 'badge-warning' : '' %>
+        "><%= submission.status %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-mid">Submitted</span>
+        <span class="font-medium"><%= submission.createdAt.toLocaleString('en-NZ') %></span>
+      </div>
+    </div>
+
+    <% if (submission.events && submission.events.length > 0) { %>
+    <div class="border-t border-warm pt-5 mt-5">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-mid mb-3">Processing Steps</h3>
+      <div class="space-y-2">
+        <% submission.events.forEach(function(event) { %>
+        <div class="flex items-center gap-2 text-sm">
+          <% if (event.succeeded) { %>
+          <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: #ecfdf5;">
+            <svg class="w-3 h-3" style="color: #059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <% } else { %>
+          <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: #fef2f2;">
+            <svg class="w-3 h-3" style="color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+          <% } %>
+          <span><%= event.step.replace(/_/g, ' ') %></span>
+          <% if (!event.succeeded && event.errorMessage) { %>
+          <span class="text-red-500 text-xs truncate max-w-[200px]">(<%= event.errorMessage %>)</span>
+          <% } %>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="mt-8">
+      <a href="/" class="btn-primary w-full text-center block">
+        Start another
+      </a>
+    </div>
+  </div>
+</div>

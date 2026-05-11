@@ -1,0 +1,55 @@
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-6 animate-in">
+    <div>
+      <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Staff Management</h1>
+      <p class="text-mid text-sm mt-1">Manage team members and their GHL assignments</p>
+    </div>
+    <a href="/admin/staff/new" class="btn-primary">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Add Staff
+    </a>
+  </div>
+
+  <div class="card overflow-hidden animate-in animate-in-delay-1">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Name</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Email</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Role</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Last Login</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% staff.forEach(function(s) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors <%= !s.isActive ? 'opacity-50' : '' %>">
+          <td class="px-5 py-3.5 font-medium"><%= s.name %></td>
+          <td class="px-5 py-3.5 text-mid"><%= s.email %></td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= s.role === 'ADMIN' ? 'badge-admin' : 'badge-staff' %>"><%= s.role %></span>
+          </td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= s.isActive ? 'badge-success' : 'badge-error' %>"><%= s.isActive ? 'Active' : 'Inactive' %></span>
+          </td>
+          <td class="px-5 py-3.5 text-mid">
+            <%= s.lastLoginAt ? s.lastLoginAt.toLocaleDateString('en-NZ') : 'Never' %>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <a href="/admin/staff/<%= s.id %>" class="text-brand hover:underline text-sm">Edit</a>
+              <form method="POST" action="/admin/staff/<%= s.id %>/deactivate" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="text-mid hover:text-brand text-sm transition-colors">
+                  <%= s.isActive ? 'Deactivate' : 'Activate' %>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>

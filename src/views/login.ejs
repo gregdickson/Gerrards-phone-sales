@@ -1,0 +1,34 @@
+<div class="min-h-[80vh] flex items-center justify-center">
+  <div class="w-full max-w-md animate-in">
+    <div class="text-center mb-10">
+      <img src="https://cdn.prod.website-files.com/6972e8e7564861e1d3c38f8b/699125c8d02a54ec48a1b14f_gerrards_logo-standard.svg"
+           alt="Gerrards" class="h-10 mx-auto mb-4">
+      <h1 class="font-serif text-3xl italic" style="color: var(--brand-dark);">Phone & Referral</h1>
+      <p class="text-mid text-sm mt-2">Sign in to capture leads</p>
+    </div>
+
+    <div class="card p-8">
+      <form method="POST" action="/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label for="email" class="block text-sm font-medium mb-2" style="color: var(--brand-dark);">Email address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          autofocus
+          placeholder="you@gerrards.co.nz"
+          class="input-field mb-6"
+        >
+        <button type="submit" class="btn-primary w-full">
+          Send login link
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-mid mt-6">We'll send a one-time login link to your email</p>
+  </div>
+</div>

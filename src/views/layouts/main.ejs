@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' — ' : '' %>Gerrards Phone & Referral</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --brand-orange: #ff7624;
+      --brand-orange-hover: #e5691f;
+      --brand-orange-light: #fff4eb;
+      --brand-dark: #1a1a2e;
+      --brand-charcoal: #2d2d3f;
+      --brand-warm-gray: #f8f6f3;
+      --brand-mid-gray: #6b6b7b;
+      --brand-border: #e8e6e1;
+      --brand-blue: #4d65ff;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--brand-warm-gray);
+      color: var(--brand-dark);
+    }
+    .font-serif { font-family: 'Instrument Serif', serif; }
+    .bg-brand { background-color: var(--brand-orange); }
+    .bg-brand-hover:hover { background-color: var(--brand-orange-hover); }
+    .text-brand { color: var(--brand-orange); }
+    .border-brand { border-color: var(--brand-orange); }
+    .bg-brand-light { background-color: var(--brand-orange-light); }
+    .bg-brand-dark { background-color: var(--brand-dark); }
+    .bg-brand-charcoal { background-color: var(--brand-charcoal); }
+    .text-mid { color: var(--brand-mid-gray); }
+    .border-warm { border-color: var(--brand-border); }
+    .btn-primary {
+      background-color: var(--brand-orange);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary:hover {
+      background-color: var(--brand-orange-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 118, 36, 0.3);
+    }
+    .btn-secondary {
+      background-color: white;
+      color: var(--brand-dark);
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: 1px solid var(--brand-border);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--brand-orange);
+      color: var(--brand-orange);
+    }
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .input-field {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid var(--brand-border);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: white;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--brand-orange);
+      box-shadow: 0 0 0 3px rgba(255, 118, 36, 0.1);
+    }
+    .input-field.error { border-color: #ef4444; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .badge-success { background: #ecfdf5; color: #065f46; }
+    .badge-error { background: #fef2f2; color: #991b1b; }
+    .badge-warning { background: #fffbeb; color: #92400e; }
+    .badge-admin { background: #f0e6ff; color: #5b21b6; }
+    .badge-staff { background: #f3f4f6; color: #374151; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeInUp 0.4s ease-out both;
+    }
+    .animate-in-delay-1 { animation-delay: 0.05s; }
+    .animate-in-delay-2 { animation-delay: 0.1s; }
+    .animate-in-delay-3 { animation-delay: 0.15s; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <% if (typeof user !== 'undefined' && user) { %>
+  <nav class="bg-white border-b border-warm" x-data="{ mobileOpen: false }">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center gap-8">
+          <a href="/" class="flex items-center gap-2">
+            <img src="https://cdn.prod.website-files.com/6972e8e7564861e1d3c38f8b/699125c8d02a54ec48a1b14f_gerrards_logo-standard.svg"
+                 alt="Gerrards" class="h-8">
+          </a>
+          <div class="hidden md:flex items-center gap-1 text-sm">
+            <a href="/" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Categories</a>
+            <a href="/my-submissions" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">My Submissions</a>
+            <% if (user.role === 'ADMIN') { %>
+            <span class="mx-1 text-gray-200">|</span>
+            <a href="/admin/staff" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Staff</a>
+            <a href="/admin/categories" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Categories</a>
+            <a href="/admin/lead-sources" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Lead Sources</a>
+            <a href="/admin/submissions" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">All Submissions</a>
+            <% } %>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+          <span class="text-sm text-mid"><%= user.name %></span>
+          <form method="POST" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <button type="submit" class="text-sm text-mid hover:text-brand transition-colors">Logout</button>
+          </form>
+        </div>
+        <button class="md:hidden p-2 rounded-lg hover:bg-gray-100" @click="mobileOpen = !mobileOpen">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="md:hidden border-t border-warm" x-show="mobileOpen" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0">
+      <div class="px-4 py-4 space-y-1">
+        <a href="/" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Categories</a>
+        <a href="/my-submissions" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">My Submissions</a>
+        <% if (user.role === 'ADMIN') { %>
+        <hr class="my-2 border-warm">
+        <a href="/admin/staff" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Staff</a>
+        <a href="/admin/categories" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Categories</a>
+        <a href="/admin/lead-sources" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Lead Sources</a>
+        <a href="/admin/submissions" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">All Submissions</a>
+        <% } %>
+        <hr class="my-2 border-warm">
+        <div class="px-3 py-2 flex items-center justify-between">
+          <span class="text-sm text-mid"><%= user.name %></span>
+          <form method="POST" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <button type="submit" class="text-sm text-brand">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <% } %>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="mb-6 animate-in">
+      <div class="p-4 rounded-lg text-sm flex items-start gap-3
+        <%= flash.type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' : '' %>
+        <%= flash.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : '' %>
+        <%= flash.type === 'info' ? 'bg-blue-50 text-blue-800 border border-blue-100' : '' %>
+      ">
+        <% if (flash.type === 'error') { %>
+        <svg class="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+        <% } else if (flash.type === 'success') { %>
+        <svg class="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+        <% } %>
+        <span><%= flash.message %></span>
+      </div>
+    </div>
+    <% } %>
+
+    <%- body %>
+  </main>
+</body>
+</html>
