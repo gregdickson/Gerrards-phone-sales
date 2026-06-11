@@ -68,6 +68,7 @@ async function build() {
   fastify.get('/health', async () => ({ status: 'ok' }));
 
   // Register routes
+  await fastify.register(require('./routes/webhooks'));
   await fastify.register(require('./routes/auth'));
   await fastify.register(require('./routes/landing'));
   await fastify.register(require('./routes/submissions'));

@@ -47,6 +47,11 @@ const config = {
   EMAIL_FROM: requireEnv('EMAIL_FROM'),
 
   GOOGLE_PLACES_API_KEY: requireEnv('GOOGLE_PLACES_API_KEY'),
+
+  NUACOM_EMAIL: requireEnv('NUACOM_EMAIL'),
+  NUACOM_PASSWORD: requireEnv('NUACOM_PASSWORD'),
+
+  OPENAI_API_KEY: requireEnv('OPENAI_API_KEY'),
 };
 
 module.exports = config;

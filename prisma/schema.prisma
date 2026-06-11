@@ -24,6 +24,7 @@ enum SubmissionStep {
   GHL_CONTACT_NOTE
   STAFF_WEBHOOK
   GHL_OPPORTUNITY
+  FOLIO
 }
 
 model User {

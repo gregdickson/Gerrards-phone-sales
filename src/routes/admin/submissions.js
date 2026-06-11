@@ -3,6 +3,7 @@ const authorize = require('../../middleware/authorize');
 const { executeStep } = require('../../services/submission-processor');
 const ghlService = require('../../services/ghl');
 const webhookService = require('../../services/webhook');
+const folioService = require('../../services/folio');
 const config = require('../../config');
 
 async function adminSubmissionRoutes(fastify) {
@@ -83,7 +84,7 @@ async function adminSubmissionRoutes(fastify) {
   // POST /admin/submissions/:id/retry/:step — retry a failed step
   fastify.post('/submissions/:id/retry/:step', async (request, reply) => {
     const { id, step } = request.params;
-    const validSteps = ['GHL_CONTACT', 'GHL_TAG', 'GHL_CONTACT_NOTE', 'STAFF_WEBHOOK', 'GHL_OPPORTUNITY'];
+    const validSteps = ['GHL_CONTACT', 'GHL_TAG', 'GHL_CONTACT_NOTE', 'STAFF_WEBHOOK', 'GHL_OPPORTUNITY', 'FOLIO'];
 
     if (!validSteps.includes(step)) {
       reply.flash('error', 'Invalid step.');
@@ -200,6 +201,12 @@ async function adminSubmissionRoutes(fastify) {
             data: { ghlOpportunityId: result.data.id },
           });
         }
+        break;
+
+      case 'FOLIO':
+        result = await executeStep(fastify.prisma, id, step, () =>
+          folioService.createNewBusiness(submission)
+        );
         break;
     }
 

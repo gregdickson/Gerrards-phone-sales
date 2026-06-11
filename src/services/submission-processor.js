@@ -1,5 +1,6 @@
 const ghlService = require('./ghl');
 const webhookService = require('./webhook');
+const folioService = require('./folio');
 const config = require('../config');
 
 async function executeStep(prisma, submissionId, step, fn) {
@@ -138,6 +139,11 @@ async function processSubmission(prisma, submissionId) {
   if (!oppResult.success) {
     return markFailed(prisma, submissionId);
   }
+
+  // Step 6: Folio New Business (NON-FATAL)
+  await executeStep(prisma, submissionId, 'FOLIO', () =>
+    folioService.createNewBusiness(submission)
+  );
 
   // All done
   await prisma.submission.update({
