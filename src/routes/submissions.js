@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const authenticate = require('../middleware/authenticate');
 const config = require('../config');
 
@@ -32,6 +33,9 @@ async function submissionRoutes(fastify) {
       leadSources,
       csrfToken: await reply.generateCsrf(),
       googlePlacesApiKey: config.GOOGLE_PLACES_API_KEY,
+      // Idempotency key for this form render — claimed on submit so a
+      // double-click / resubmit can't create a second lead.
+      submitToken: crypto.randomUUID(),
       values: {},
       errors: {},
     });
@@ -74,30 +78,54 @@ async function submissionRoutes(fastify) {
         leadSources,
         csrfToken: await reply.generateCsrf(),
         googlePlacesApiKey: config.GOOGLE_PLACES_API_KEY,
+        // Carry the same token through a validation re-render: no row was
+        // created, so the eventual successful submit stays idempotent.
+        submitToken: body.submit_token?.trim() || crypto.randomUUID(),
         values: body,
         errors,
       });
     }
 
-    // Create submission
-    const submission = await fastify.prisma.submission.create({
-      data: {
-        salespersonUserId: request.user.id,
-        insuranceCategoryId: body.category_id,
-        leadSourceId: body.lead_source_id,
-        leadFirstName: body.lead_first_name.trim(),
-        leadLastName: body.lead_last_name.trim(),
-        leadEmail: body.lead_email.trim(),
-        leadPhone: body.lead_phone.trim(),
-        organisation: body.organisation?.trim() || null,
-        addressLine: body.street_address?.trim() || null,
-        city: body.city?.trim() || null,
-        state: body.state?.trim() || null,
-        country: body.country?.trim() || 'NZ',
-        postalCode: body.postal_code?.trim() || null,
-        notes: body.notes.trim(),
-      },
-    });
+    // Create submission. The submit_token unique constraint makes this the
+    // idempotency point: a duplicate POST (double-click, back-button resubmit,
+    // or a true concurrent race) hits P2002 and is sent to the original
+    // submission instead of creating a second lead.
+    const submitToken = body.submit_token?.trim() || crypto.randomUUID();
+    let submission;
+    try {
+      submission = await fastify.prisma.submission.create({
+        data: {
+          salespersonUserId: request.user.id,
+          insuranceCategoryId: body.category_id,
+          leadSourceId: body.lead_source_id,
+          leadFirstName: body.lead_first_name.trim(),
+          leadLastName: body.lead_last_name.trim(),
+          leadEmail: body.lead_email.trim(),
+          leadPhone: body.lead_phone.trim(),
+          organisation: body.organisation?.trim() || null,
+          addressLine: body.street_address?.trim() || null,
+          city: body.city?.trim() || null,
+          state: body.state?.trim() || null,
+          country: body.country?.trim() || 'NZ',
+          postalCode: body.postal_code?.trim() || null,
+          notes: body.notes.trim(),
+          submitToken,
+        },
+      });
+    } catch (err) {
+      if (err.code === 'P2002') {
+        // This token already produced a lead — duplicate submit. Send the
+        // user to the original confirmation rather than create a second row.
+        const existing = await fastify.prisma.submission.findUnique({
+          where: { submitToken },
+        });
+        if (existing) {
+          fastify.log.warn({ submitToken, submissionId: existing.id }, 'Duplicate submit blocked');
+          return reply.redirect(`/submissions/${existing.id}`);
+        }
+      }
+      throw err;
+    }
 
     // Process submission inline
     const { processSubmission } = require('../services/submission-processor');

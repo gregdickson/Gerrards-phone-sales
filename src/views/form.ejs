@@ -7,6 +7,7 @@
   <form method="POST" action="/new" class="card p-6 sm:p-8 space-y-5">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="category_id" value="<%= category.id %>">
+    <input type="hidden" name="submit_token" value="<%= typeof submitToken !== 'undefined' ? submitToken : '' %>">
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
@@ -149,8 +150,8 @@
     </div>
 
     <div class="pt-2">
-      <button type="submit" class="btn-primary w-full py-3">
-        Submit Lead
+      <button type="submit" id="submit-lead-btn" class="btn-primary w-full py-3 disabled:opacity-60 disabled:cursor-not-allowed">
+        <span data-label>Submit Lead</span>
         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
         </svg>
@@ -158,6 +159,29 @@
     </div>
   </form>
 </div>
+
+<script>
+  // Guard against duplicate submissions: once the form is validly submitting,
+  // disable the button and block any further submit (double-click, Enter spam).
+  // The processing pipeline runs inline and can take a few seconds, which is
+  // exactly when impatient clicks created duplicate leads. The server-side
+  // submit_token is the real backstop; this is the first line of defence.
+  (function () {
+    var form = document.querySelector('form[action="/new"]');
+    if (!form) return;
+    var btn = document.getElementById('submit-lead-btn');
+    var submitting = false;
+    form.addEventListener('submit', function (e) {
+      if (submitting) { e.preventDefault(); return; }
+      submitting = true;
+      if (btn) {
+        btn.disabled = true;
+        var label = btn.querySelector('[data-label]');
+        if (label) label.textContent = 'Submitting…';
+      }
+    });
+  })();
+</script>
 
 <script src="/js/places.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=<%= googlePlacesApiKey %>&libraries=places&callback=initPlacesAutocomplete" async defer></script>

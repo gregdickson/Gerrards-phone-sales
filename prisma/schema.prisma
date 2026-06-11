@@ -122,6 +122,10 @@ model Submission {
   ghlOpportunityId      String?           @map("ghl_opportunity_id")
   webhookResponseStatus Int?              @map("webhook_response_status")
 
+  // Per-form idempotency key. Unique constraint blocks duplicate rows from
+  // double-clicks / back-button resubmits even under a concurrent race.
+  submitToken           String?           @unique @map("submit_token")
+
   createdAt             DateTime          @default(now()) @map("created_at")
   completedAt           DateTime?         @map("completed_at")
 
