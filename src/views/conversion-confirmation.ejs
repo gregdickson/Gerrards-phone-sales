@@ -1,0 +1,53 @@
+<%
+  const c = conversion;
+  const won = c.outcome === 'WON';
+  const money = (d) => d == null ? '—' : '$' + Number(d).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const LOST_LABELS = {
+    WENT_DIRECT: 'Went direct to insurer', PRICE: 'Price / premium too high',
+    INCUMBENT_BROKER: 'Stayed with incumbent broker', NO_APPETITE: 'No insurer appetite',
+    CUSTOMER_WITHDREW: 'Customer withdrew', OTHER: 'Other',
+  };
+%>
+<div class="max-w-xl mx-auto animate-in">
+  <div class="card p-8 text-center mb-6">
+    <div class="w-14 h-14 rounded-full <%= won ? 'bg-emerald-50' : 'bg-red-50' %> mx-auto flex items-center justify-center mb-4">
+      <% if (won) { %>
+      <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      <% } else { %>
+      <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <% } %>
+    </div>
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);"><%= won ? 'Won' : 'Lost' %> — logged</h1>
+    <p class="text-mid text-sm mt-1"><%= c.clientName %></p>
+    <% if (won) { %>
+    <p class="text-3xl font-semibold text-brand mt-4"><%= money(c.estBrokerage) %></p>
+    <p class="text-xs text-mid">estimated brokerage</p>
+    <% } %>
+  </div>
+
+  <div class="card divide-y divide-[#e8e6e1] text-sm mb-6">
+    <% if (won) { %>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Business type</span><span class="font-medium"><%= c.businessType === 'RENEWAL' ? 'Renewal' : 'New business' %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Class</span><span class="font-medium"><%= c.category ? c.category.label : '—' %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Insurer</span><span class="font-medium"><%= c.insurer ? c.insurer.label : '—' %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Policies</span><span class="font-medium"><%= c.policiesBound %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Annual premium</span><span class="font-medium"><%= money(c.annualPremium) %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Commission rate</span><span class="font-medium"><%= c.baseCommissionPct == null ? '—' : Number(c.baseCommissionPct) + '%' %></span></div>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Broker fee</span><span class="font-medium"><%= money(c.brokerFee) %></span></div>
+    <% if (c.premiumFunded) { %>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Premium funding</span><span class="font-medium"><%= c.funder || 'Yes' %> · <%= money(c.fundingCommission) %></span></div>
+    <% } %>
+    <% } else { %>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Reason</span><span class="font-medium"><%= LOST_LABELS[c.lostReason] || c.lostReason %></span></div>
+    <% if (c.competitor) { %><div class="flex justify-between px-5 py-3"><span class="text-mid">Won by</span><span class="font-medium"><%= c.competitor %></span></div><% } %>
+    <% } %>
+    <% if (c.ghlOpportunityId) { %>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">GHL sync</span><span class="font-medium"><%= c.ghlWritebackStatus && c.ghlWritebackStatus < 300 ? 'Synced ✓' : 'Pending / check' %></span></div>
+    <% } %>
+  </div>
+
+  <div class="flex gap-3">
+    <a href="/conversions/new" class="btn-primary flex-1 text-center">Log another</a>
+    <a href="/my-conversions" class="btn-secondary flex-1 text-center">My conversions</a>
+  </div>
+</div>

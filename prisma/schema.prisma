@@ -27,6 +27,25 @@ enum SubmissionStep {
   FOLIO
 }
 
+enum ConversionOutcome {
+  WON
+  LOST
+}
+
+enum BusinessType {
+  NEW_BUSINESS
+  RENEWAL
+}
+
+enum LostReason {
+  WENT_DIRECT
+  PRICE
+  INCUMBENT_BROKER
+  NO_APPETITE
+  CUSTOMER_WITHDREW
+  OTHER
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -41,6 +60,7 @@ model User {
   magicLinks   MagicLinkToken[]
   sessions     Session[]
   submissions  Submission[]
+  conversions  Conversion[]
 
   @@map("users")
 }
@@ -83,6 +103,7 @@ model InsuranceCategory {
   createdAt     DateTime @default(now()) @map("created_at")
 
   submissions   Submission[]
+  conversions   Conversion[]
 
   @@map("insurance_categories")
 }
@@ -154,4 +175,69 @@ model SubmissionEvent {
 
   @@index([submissionId])
   @@map("submission_events")
+}
+
+// Insurers (underwriters) a broker can place business with. Admin-editable,
+// mirrors the LeadSource pattern. defaultCommissionPct pre-fills the brokerage
+// calc on the conversion form so the broker doesn't type the percentage.
+model Insurer {
+  id                   String   @id @default(cuid())
+  label                String   @unique
+  defaultCommissionPct Decimal  @default(0) @map("default_commission_pct") @db.Decimal(5, 2)
+  sortOrder            Int      @default(0) @map("sort_order")
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  conversions          Conversion[]
+
+  @@map("insurers")
+}
+
+// A won/lost outcome logged by a broker once a lead is closed. Standalone (not
+// every win originates as a Submission in this app — Google Ads leads come
+// through the lead-distribution system). Optionally links back to a Submission
+// for pre-fill and stores GHL ids so the outcome can be written back to GHL and
+// the enquiry → win funnel can be joined on the dashboard. Dollar figures are
+// the broker's estimate at bind; CBN reconciles actuals later.
+model Conversion {
+  id                  String            @id @default(cuid())
+  brokerUserId        String            @map("broker_user_id")
+  submissionId        String?           @map("submission_id")
+  ghlContactId        String?           @map("ghl_contact_id")
+  ghlOpportunityId    String?           @map("ghl_opportunity_id")
+
+  clientName          String            @map("client_name")
+  outcome             ConversionOutcome
+
+  // --- WON ---
+  businessType        BusinessType?     @map("business_type")
+  insuranceCategoryId String?           @map("insurance_category_id")
+  insurerId           String?           @map("insurer_id")
+  policiesBound       Int               @default(1) @map("policies_bound")
+  annualPremium       Decimal?          @map("annual_premium")       @db.Decimal(12, 2)
+  inceptionDate       DateTime?         @map("inception_date")
+  brokerFee           Decimal?          @map("broker_fee")           @db.Decimal(12, 2)
+  premiumFunded       Boolean           @default(false) @map("premium_funded")
+  funder              String?
+  fundingCommission   Decimal?          @map("funding_commission")   @db.Decimal(12, 2)
+  baseCommissionPct   Decimal?          @map("base_commission_pct")  @db.Decimal(5, 2)
+  estBrokerage        Decimal?          @map("est_brokerage")        @db.Decimal(12, 2)
+
+  // --- LOST ---
+  lostReason          LostReason?       @map("lost_reason")
+  competitor          String?
+
+  notes               String?
+  ghlWritebackStatus  Int?              @map("ghl_writeback_status")
+  submitToken         String?           @unique @map("submit_token")
+  createdAt           DateTime          @default(now()) @map("created_at")
+
+  broker              User               @relation(fields: [brokerUserId], references: [id])
+  category            InsuranceCategory? @relation(fields: [insuranceCategoryId], references: [id])
+  insurer             Insurer?           @relation(fields: [insurerId], references: [id])
+
+  @@index([brokerUserId])
+  @@index([createdAt])
+  @@index([outcome])
+  @@map("conversions")
 }

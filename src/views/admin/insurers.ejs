@@ -1,0 +1,69 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 animate-in">
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Insurers</h1>
+    <p class="text-mid text-sm mt-1">Underwriters shown on the conversion form. The default rate pre-fills the brokerage calc.</p>
+  </div>
+
+  <div class="card overflow-hidden mb-6 animate-in animate-in-delay-1">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Order</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Insurer</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Default %</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% insurers.forEach(function(ins) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors <%= !ins.isActive ? 'opacity-50' : '' %>">
+          <td class="px-5 py-3.5 text-mid"><%= ins.sortOrder %></td>
+          <td class="px-5 py-3.5 font-medium"><%= ins.label %></td>
+          <td class="px-5 py-3.5 text-mid"><%= Number(ins.defaultCommissionPct) %>%</td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= ins.isActive ? 'badge-success' : 'badge-error' %>"><%= ins.isActive ? 'Active' : 'Inactive' %></span>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <a href="/admin/insurers?edit=<%= ins.id %>" class="text-brand hover:underline text-sm">Edit</a>
+              <form method="POST" action="/admin/insurers/<%= ins.id %>" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="text-mid hover:text-brand text-sm transition-colors"><%= ins.isActive ? 'Deactivate' : 'Activate' %></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <%
+    var editIns = null;
+    if (editId) { insurers.forEach(function(i) { if (i.id === editId) editIns = i; }); }
+  %>
+
+  <div class="card p-6 animate-in animate-in-delay-2">
+    <h2 class="font-medium mb-4"><%= editIns ? 'Edit' : 'Add' %> Insurer</h2>
+    <form method="POST" action="/admin/insurers" class="flex flex-wrap gap-4 items-end">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (editIns) { %><input type="hidden" name="id" value="<%= editIns.id %>"><% } %>
+      <div class="flex-1 min-w-[200px]">
+        <label for="label" class="block text-sm font-medium mb-1.5">Insurer *</label>
+        <input type="text" id="label" name="label" required value="<%= editIns ? editIns.label : '' %>" class="input-field">
+      </div>
+      <div class="w-32">
+        <label for="default_commission_pct" class="block text-sm font-medium mb-1.5">Default %</label>
+        <input type="text" inputmode="decimal" id="default_commission_pct" name="default_commission_pct"
+               value="<%= editIns ? Number(editIns.defaultCommissionPct) : '' %>" class="input-field" placeholder="e.g. 15">
+      </div>
+      <div class="w-24">
+        <label for="sort_order" class="block text-sm font-medium mb-1.5">Order</label>
+        <input type="number" id="sort_order" name="sort_order" value="<%= editIns ? editIns.sortOrder : '' %>" class="input-field">
+      </div>
+      <button type="submit" class="btn-primary"><%= editIns ? 'Update' : 'Add' %></button>
+      <% if (editIns) { %><a href="/admin/insurers" class="btn-secondary">Cancel</a><% } %>
+    </form>
+  </div>
+</div>

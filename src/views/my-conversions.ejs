@@ -1,0 +1,50 @@
+<%
+  const money = (d) => d == null ? '—' : '$' + Number(d).toLocaleString('en-NZ', { maximumFractionDigits: 0 });
+%>
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6 animate-in">
+    <div>
+      <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">My Conversions</h1>
+      <p class="text-mid text-sm mt-1">Won and lost deals you’ve logged</p>
+    </div>
+    <a href="/conversions/new" class="btn-primary text-sm">+ Log conversion</a>
+  </div>
+
+  <% if (conversions.length === 0) { %>
+  <div class="card p-12 text-center animate-in">
+    <p class="text-mid">No conversions logged yet.</p>
+    <a href="/conversions/new" class="btn-primary inline-flex mt-4">Log your first conversion</a>
+  </div>
+  <% } else { %>
+  <div class="card overflow-hidden animate-in">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Client</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Outcome</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Class / Insurer</th>
+          <th class="text-right px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Brokerage</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% conversions.forEach(function(c) { %>
+        <tr class="border-b border-warm last:border-0 hover:bg-gray-50 transition-colors">
+          <td class="px-5 py-3.5">
+            <a href="/conversions/<%= c.id %>" class="font-medium text-brand hover:underline"><%= c.clientName %></a>
+          </td>
+          <td class="px-5 py-3.5">
+            <span class="badge <%= c.outcome === 'WON' ? 'badge-success' : 'badge-error' %>"><%= c.outcome %></span>
+          </td>
+          <td class="px-5 py-3.5 text-mid">
+            <% if (c.outcome === 'WON') { %><%= c.category ? c.category.label : '—' %><%= c.insurer ? ' · ' + c.insurer.label : '' %><% } else { %>—<% } %>
+          </td>
+          <td class="px-5 py-3.5 text-right font-medium"><%= c.outcome === 'WON' ? money(c.estBrokerage) : '—' %></td>
+          <td class="px-5 py-3.5 text-mid"><%= c.createdAt.toLocaleDateString('en-NZ') %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
