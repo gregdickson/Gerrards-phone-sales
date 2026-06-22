@@ -23,7 +23,7 @@
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Client</th>
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Outcome</th>
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Class / Insurer</th>
-          <th class="text-right px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Brokerage</th>
+          <th class="text-right px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Premium (GWP)</th>
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Date</th>
         </tr>
       </thead>
@@ -39,7 +39,7 @@
           <td class="px-5 py-3.5 text-mid">
             <% if (c.outcome === 'WON') { %><%= c.category ? c.category.label : '—' %><%= c.insurer ? ' · ' + c.insurer.label : '' %><% } else { %>—<% } %>
           </td>
-          <td class="px-5 py-3.5 text-right font-medium"><%= c.outcome === 'WON' ? money(c.estBrokerage) : '—' %></td>
+          <td class="px-5 py-3.5 text-right font-medium"><%= c.outcome === 'WON' ? money(c.annualPremium) : '—' %></td>
           <td class="px-5 py-3.5 text-mid"><%= c.createdAt.toLocaleDateString('en-NZ') %></td>
         </tr>
         <% }); %>

@@ -20,8 +20,8 @@
     <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);"><%= won ? 'Won' : 'Lost' %> — logged</h1>
     <p class="text-mid text-sm mt-1"><%= c.clientName %></p>
     <% if (won) { %>
-    <p class="text-3xl font-semibold text-brand mt-4"><%= money(c.estBrokerage) %></p>
-    <p class="text-xs text-mid">estimated brokerage</p>
+    <p class="text-3xl font-semibold text-brand mt-4"><%= money(c.annualPremium) %></p>
+    <p class="text-xs text-mid">annual premium (GWP)</p>
     <% } %>
   </div>
 
@@ -31,11 +31,9 @@
     <div class="flex justify-between px-5 py-3"><span class="text-mid">Class</span><span class="font-medium"><%= c.category ? c.category.label : '—' %></span></div>
     <div class="flex justify-between px-5 py-3"><span class="text-mid">Insurer</span><span class="font-medium"><%= c.insurer ? c.insurer.label : '—' %></span></div>
     <div class="flex justify-between px-5 py-3"><span class="text-mid">Policies</span><span class="font-medium"><%= c.policiesBound %></span></div>
-    <div class="flex justify-between px-5 py-3"><span class="text-mid">Annual premium</span><span class="font-medium"><%= money(c.annualPremium) %></span></div>
-    <div class="flex justify-between px-5 py-3"><span class="text-mid">Commission rate</span><span class="font-medium"><%= c.baseCommissionPct == null ? '—' : Number(c.baseCommissionPct) + '%' %></span></div>
     <div class="flex justify-between px-5 py-3"><span class="text-mid">Broker fee</span><span class="font-medium"><%= money(c.brokerFee) %></span></div>
-    <% if (c.premiumFunded) { %>
-    <div class="flex justify-between px-5 py-3"><span class="text-mid">Premium funding</span><span class="font-medium"><%= c.funder || 'Yes' %> · <%= money(c.fundingCommission) %></span></div>
+    <% if (c.inceptionDate) { %>
+    <div class="flex justify-between px-5 py-3"><span class="text-mid">Inception</span><span class="font-medium"><%= c.inceptionDate.toLocaleDateString('en-NZ') %></span></div>
     <% } %>
     <% } else { %>
     <div class="flex justify-between px-5 py-3"><span class="text-mid">Reason</span><span class="font-medium"><%= LOST_LABELS[c.lostReason] || c.lostReason %></span></div>

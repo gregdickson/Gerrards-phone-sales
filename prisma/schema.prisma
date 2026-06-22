@@ -183,7 +183,6 @@ model SubmissionEvent {
 model Insurer {
   id                   String   @id @default(cuid())
   label                String   @unique
-  defaultCommissionPct Decimal  @default(0) @map("default_commission_pct") @db.Decimal(5, 2)
   sortOrder            Int      @default(0) @map("sort_order")
   isActive             Boolean  @default(true) @map("is_active")
   createdAt            DateTime @default(now()) @map("created_at")
@@ -217,11 +216,6 @@ model Conversion {
   annualPremium       Decimal?          @map("annual_premium")       @db.Decimal(12, 2)
   inceptionDate       DateTime?         @map("inception_date")
   brokerFee           Decimal?          @map("broker_fee")           @db.Decimal(12, 2)
-  premiumFunded       Boolean           @default(false) @map("premium_funded")
-  funder              String?
-  fundingCommission   Decimal?          @map("funding_commission")   @db.Decimal(12, 2)
-  baseCommissionPct   Decimal?          @map("base_commission_pct")  @db.Decimal(5, 2)
-  estBrokerage        Decimal?          @map("est_brokerage")        @db.Decimal(12, 2)
 
   // --- LOST ---
   lostReason          LostReason?       @map("lost_reason")

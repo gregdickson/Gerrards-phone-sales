@@ -6,21 +6,12 @@ const OUTCOMES = ['WON', 'LOST'];
 const BUSINESS_TYPES = ['NEW_BUSINESS', 'RENEWAL'];
 const LOST_REASONS = ['WENT_DIRECT', 'PRICE', 'INCUMBENT_BROKER', 'NO_APPETITE', 'CUSTOMER_WITHDREW', 'OTHER'];
 
-// Parse a money/number field → finite Number or null. Strips $ and commas so a
-// broker can paste "$12,500" without breaking the calc.
+// Parse a money field → finite Number or null. Strips $ and commas so a broker
+// can paste "$12,500" without breaking it.
 function num(v) {
   if (v == null || String(v).trim() === '') return null;
   const n = parseFloat(String(v).replace(/[$,\s]/g, ''));
   return Number.isFinite(n) ? n : null;
-}
-
-// est brokerage = premium × base% + broker fee + funding commission
-function computeBrokerage({ annualPremium, baseCommissionPct, brokerFee, fundingCommission }) {
-  const base = (annualPremium != null && baseCommissionPct != null)
-    ? annualPremium * (baseCommissionPct / 100)
-    : 0;
-  const total = base + (brokerFee || 0) + (fundingCommission || 0);
-  return Math.round(total * 100) / 100;
 }
 
 async function loadFormRefs(prisma) {
@@ -106,21 +97,8 @@ async function conversionRoutes(fastify) {
       });
     }
 
-    // Resolve commission %: explicit override else the insurer default.
-    let baseCommissionPct = num(body.base_commission_pct);
-    let insurerId = body.insurer_id?.trim() || null;
-    if (outcome === 'WON' && insurerId && baseCommissionPct == null) {
-      const insurer = await fastify.prisma.insurer.findUnique({ where: { id: insurerId } });
-      if (insurer) baseCommissionPct = Number(insurer.defaultCommissionPct);
-    }
-
-    const premiumFunded = body.premium_funded === 'on' || body.premium_funded === 'true';
     const annualPremium = outcome === 'WON' ? num(body.annual_premium) : null;
     const brokerFee = outcome === 'WON' ? num(body.broker_fee) : null;
-    const fundingCommission = outcome === 'WON' && premiumFunded ? num(body.funding_commission) : null;
-    const estBrokerage = outcome === 'WON'
-      ? computeBrokerage({ annualPremium, baseCommissionPct, brokerFee, fundingCommission })
-      : null;
 
     const submitToken = body.submit_token?.trim() || crypto.randomUUID();
     let conversion;
@@ -135,16 +113,11 @@ async function conversionRoutes(fastify) {
           outcome,
           businessType: outcome === 'WON' ? body.business_type : null,
           insuranceCategoryId: outcome === 'WON' ? (body.insurance_category_id?.trim() || null) : null,
-          insurerId: outcome === 'WON' ? insurerId : null,
+          insurerId: outcome === 'WON' ? (body.insurer_id?.trim() || null) : null,
           policiesBound: outcome === 'WON' ? Math.max(1, parseInt(body.policies_bound || '1', 10) || 1) : 1,
           annualPremium,
           inceptionDate: outcome === 'WON' && body.inception_date ? new Date(body.inception_date) : null,
           brokerFee,
-          premiumFunded: outcome === 'WON' ? premiumFunded : false,
-          funder: outcome === 'WON' && premiumFunded ? (body.funder?.trim() || null) : null,
-          fundingCommission,
-          baseCommissionPct: outcome === 'WON' ? baseCommissionPct : null,
-          estBrokerage,
           lostReason: outcome === 'LOST' ? body.lost_reason : null,
           competitor: outcome === 'LOST' ? (body.competitor?.trim() || null) : null,
           notes: body.notes?.trim() || null,
@@ -164,11 +137,12 @@ async function conversionRoutes(fastify) {
     }
 
     // Write the outcome back to GHL if we have the opportunity (NON-FATAL).
+    // monetaryValue = annual premium (the deal size on the pipeline).
     if (conversion.ghlOpportunityId) {
       try {
         const result = await ghlService.updateOpportunity(conversion.ghlOpportunityId, {
           status: outcome === 'WON' ? 'won' : 'lost',
-          monetaryValue: outcome === 'WON' ? estBrokerage : undefined,
+          monetaryValue: outcome === 'WON' ? annualPremium : undefined,
         });
         if (outcome === 'LOST' && conversion.ghlContactId) {
           await ghlService.createNote(conversion.ghlContactId,

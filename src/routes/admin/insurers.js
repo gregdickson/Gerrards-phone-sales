@@ -1,11 +1,6 @@
 const authenticate = require('../../middleware/authenticate');
 const authorize = require('../../middleware/authorize');
 
-function parsePct(v) {
-  const n = parseFloat(String(v ?? '').replace(/[%\s]/g, ''));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-
 async function insurerRoutes(fastify) {
   fastify.addHook('preHandler', authenticate);
   fastify.addHook('preHandler', authorize);
@@ -42,18 +37,17 @@ async function insurerRoutes(fastify) {
     }
 
     const label = body.label.trim();
-    const defaultCommissionPct = parsePct(body.default_commission_pct);
 
     if (body.id) {
       await fastify.prisma.insurer.update({
         where: { id: body.id },
-        data: { label, defaultCommissionPct, sortOrder: parseInt(body.sort_order || '0', 10) },
+        data: { label, sortOrder: parseInt(body.sort_order || '0', 10) },
       });
       reply.flash('success', `Insurer "${label}" updated.`);
     } else {
       const maxSort = await fastify.prisma.insurer.aggregate({ _max: { sortOrder: true } });
       await fastify.prisma.insurer.create({
-        data: { label, defaultCommissionPct, sortOrder: (maxSort._max.sortOrder || 0) + 1 },
+        data: { label, sortOrder: (maxSort._max.sortOrder || 0) + 1 },
       });
       reply.flash('success', `Insurer "${label}" created.`);
     }
