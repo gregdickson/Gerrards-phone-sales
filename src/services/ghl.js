@@ -101,6 +101,23 @@ async function updateOpportunity(opportunityId, { status, monetaryValue, name })
   return ghlFetch('PUT', `/opportunities/${opportunityId}`, body);
 }
 
+// Search opportunities (cursor-paginated). Used by the lost-sync to pull lost
+// opps. Returns { success, status, opportunities, meta }.
+async function searchOpportunities({ status, limit = 100, startAfter, startAfterId } = {}) {
+  const params = new URLSearchParams({ location_id: config.GHL_LOCATION_ID, limit: String(limit) });
+  if (status) params.set('status', status);
+  if (startAfter != null) params.set('startAfter', String(startAfter));
+  if (startAfterId) params.set('startAfterId', startAfterId);
+  const result = await ghlFetch('GET', `/opportunities/search?${params.toString()}`);
+  return {
+    success: result.success,
+    status: result.status,
+    opportunities: result.data?.opportunities || [],
+    meta: result.data?.meta || {},
+    error: result.error,
+  };
+}
+
 async function listUsers() {
   return ghlFetch('GET', `/users/?locationId=${config.GHL_LOCATION_ID}`);
 }
@@ -111,5 +128,6 @@ module.exports = {
   createNote,
   createOpportunity,
   updateOpportunity,
+  searchOpportunities,
   listUsers,
 };
