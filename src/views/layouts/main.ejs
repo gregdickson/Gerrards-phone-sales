@@ -1,3 +1,4 @@
+<% if (typeof bareLayout !== 'undefined' && bareLayout) { %><%- body %><% } else { %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,6 +131,7 @@
             <a href="/my-conversions" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">My Conversions</a>
             <% if (user.role === 'ADMIN') { %>
             <span class="mx-1 text-gray-200">|</span>
+            <a href="/dashboard" class="px-3 py-2 rounded-lg text-brand font-medium hover:bg-gray-50 transition-colors">Dashboard</a>
             <a href="/admin/staff" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Staff</a>
             <a href="/admin/categories" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Categories</a>
             <a href="/admin/lead-sources" class="px-3 py-2 rounded-lg text-mid hover:text-brand-dark hover:bg-gray-50 transition-colors">Lead Sources</a>
@@ -164,6 +166,7 @@
         <a href="/my-conversions" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">My Conversions</a>
         <% if (user.role === 'ADMIN') { %>
         <hr class="my-2 border-warm">
+        <a href="/dashboard" class="block px-3 py-2 rounded-lg text-sm text-brand font-medium hover:bg-gray-50">Dashboard</a>
         <a href="/admin/staff" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Staff</a>
         <a href="/admin/categories" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Categories</a>
         <a href="/admin/lead-sources" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Lead Sources</a>
@@ -206,3 +209,4 @@
   </main>
 </body>
 </html>
+<% } %>
