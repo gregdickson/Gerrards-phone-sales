@@ -200,7 +200,9 @@ model Insurer {
 // the broker's estimate at bind; CBN reconciles actuals later.
 model Conversion {
   id                  String            @id @default(cuid())
-  brokerUserId        String            @map("broker_user_id")
+  // Nullable: lost rows synced from GHL may be assigned to a GHL user who is
+  // not an app user, so we keep ghlAssignedTo and leave broker unlinked.
+  brokerUserId        String?           @map("broker_user_id")
   submissionId        String?           @map("submission_id")
   ghlContactId        String?           @map("ghl_contact_id")
   ghlOpportunityId    String?           @map("ghl_opportunity_id")
@@ -218,20 +220,49 @@ model Conversion {
   brokerFee           Decimal?          @map("broker_fee")           @db.Decimal(12, 2)
 
   // --- LOST ---
-  lostReason          LostReason?       @map("lost_reason")
+  lostReason          LostReason?       @map("lost_reason")        // legacy manual enum (unused; lost now from GHL)
   competitor          String?
+  // Lost-from-GHL sync fields:
+  ghlLostReasonId     String?           @map("ghl_lost_reason_id") // resolve to label via GhlLostReason.ghlId
+  ghlAssignedTo       String?           @map("ghl_assigned_to")    // GHL user id of the agent
+  lostAt              DateTime?         @map("lost_at")            // GHL lastStatusChangeAt when marked lost
+  source              String            @default("FORM") @map("source") // FORM | GHL_SYNC
 
   notes               String?
   ghlWritebackStatus  Int?              @map("ghl_writeback_status")
   submitToken         String?           @unique @map("submit_token")
   createdAt           DateTime          @default(now()) @map("created_at")
 
-  broker              User               @relation(fields: [brokerUserId], references: [id])
+  broker              User?              @relation(fields: [brokerUserId], references: [id])
   category            InsuranceCategory? @relation(fields: [insuranceCategoryId], references: [id])
   insurer             Insurer?           @relation(fields: [insurerId], references: [id])
 
   @@index([brokerUserId])
   @@index([createdAt])
   @@index([outcome])
+  @@index([ghlOpportunityId])
   @@map("conversions")
+}
+
+// Auto-discovered GHL lost-reason IDs → human labels. GHL v2 has no endpoint to
+// list lost reasons, so the sync inserts each distinct lostReasonId it sees
+// (label defaults to the id) and an admin renames it at /admin/lost-reasons.
+model GhlLostReason {
+  id        String   @id @default(cuid())
+  ghlId     String   @unique @map("ghl_id")
+  label     String
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("ghl_lost_reasons")
+}
+
+// Tiny key/value store for sync cursors (e.g. last lost-sync timestamp).
+model SyncState {
+  key       String   @id
+  value     String?
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("sync_state")
 }

@@ -77,15 +77,41 @@ async function build() {
   await fastify.register(require('./routes/admin/categories'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/lead-sources'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/insurers'), { prefix: '/admin' });
+  await fastify.register(require('./routes/admin/lost-reasons'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/submissions'), { prefix: '/admin' });
 
   return fastify;
+}
+
+// Periodic GHL → conversions lost sync. Runs an incremental top-up on boot
+// (only once an initial backfill has set the cursor) and every 6 hours. The
+// full backfill is run manually via `node scripts/sync-lost.js --full`.
+function scheduleLostSync(app) {
+  if (process.env.LOST_SYNC_ENABLED === 'false') return;
+  const { syncLostOpportunities, getLastSyncAt } = require('./services/lost-sync');
+  const SIX_HOURS = 6 * 60 * 60 * 1000;
+
+  const run = async () => {
+    try {
+      if (!(await getLastSyncAt(prisma))) {
+        app.log.info('lost-sync: no cursor yet — skipping auto sync (run an initial backfill).');
+        return;
+      }
+      await syncLostOpportunities(prisma, { log: (m) => app.log.info(m) });
+    } catch (err) {
+      app.log.error({ err }, 'Scheduled lost sync failed');
+    }
+  };
+
+  setTimeout(run, 30_000).unref();           // catch-up shortly after boot
+  setInterval(run, SIX_HOURS).unref();        // then every 6h
 }
 
 async function start() {
   try {
     const app = await build();
     await app.listen({ port: config.PORT, host: '0.0.0.0' });
+    scheduleLostSync(app);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

@@ -1,0 +1,53 @@
+<%
+  const fmt = (d) => d ? new Date(d).toLocaleString('en-NZ') : 'never';
+%>
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 animate-in">
+    <h1 class="font-serif text-2xl italic" style="color: var(--brand-dark);">Lost Reasons</h1>
+    <p class="text-mid text-sm mt-1">Lost deals are pulled from GHL. GHL gives each reason as an ID — give it a readable label here.</p>
+  </div>
+
+  <!-- Sync status + run -->
+  <div class="card p-5 mb-6 animate-in animate-in-delay-1 flex flex-wrap items-center justify-between gap-4">
+    <div class="text-sm">
+      <p><span class="text-mid">Lost deals synced:</span> <span class="font-medium"><%= lostCount.toLocaleString('en-NZ') %></span></p>
+      <p class="mt-0.5"><span class="text-mid">Last sync:</span> <span class="font-medium"><%= fmt(lastSyncAt) %></span></p>
+    </div>
+    <form method="POST" action="/admin/lost-reasons/sync">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn-primary">Run sync now</button>
+    </form>
+  </div>
+
+  <div class="card overflow-hidden animate-in animate-in-delay-2">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-warm">
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">GHL Reason ID</th>
+          <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Label</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (reasons.length === 0) { %>
+        <tr><td colspan="3" class="px-5 py-8 text-center text-mid">No reasons yet — run the sync to discover them.</td></tr>
+        <% } %>
+        <% reasons.forEach(function(r) { var unlabelled = (r.label === r.ghlId); %>
+        <tr class="border-b border-warm last:border-0 <%= unlabelled ? 'bg-amber-50/50' : '' %>">
+          <td class="px-5 py-3 font-mono text-xs text-mid"><%= r.ghlId %></td>
+          <td class="px-5 py-3" colspan="2">
+            <form method="POST" action="/admin/lost-reasons" class="flex items-center gap-2">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="id" value="<%= r.id %>">
+              <input type="text" name="label" value="<%= unlabelled ? '' : r.label %>"
+                     placeholder="<%= unlabelled ? 'Add a label…' : '' %>"
+                     class="input-field flex-1 <%= unlabelled ? 'error' : '' %>">
+              <button type="submit" class="btn-secondary text-sm">Save</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
