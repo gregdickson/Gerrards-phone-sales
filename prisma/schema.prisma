@@ -266,3 +266,32 @@ model SyncState {
 
   @@map("sync_state")
 }
+
+// Real won/revenue ledger, imported from CBN "Broker Earnings Detail" xlsx
+// exports. Transaction-grained (one row per CBN Tran.Number — the idempotent
+// upsert key), so monthly re-imports update cleanly. This is the authoritative
+// money source (GWP/fee/commission/GBI) — distinct from `conversions` (deal
+// outcomes). Feeds the dashboard's financial panels. CBN carries no insurer or
+// class column, so those stay on conversions.
+model BrokerEarning {
+  id                String    @id @default(cuid())
+  tranNumber        String    @unique @map("tran_number")
+  brokerName        String    @map("broker_name")             // resolved from file→broker mapping
+  brokerUserId      String?   @map("broker_user_id")          // optional hint; matched by name, no FK
+  tranDate          DateTime  @map("tran_date")
+  effectiveDate     DateTime? @map("effective_date")
+  clientName        String?   @map("client_name")
+  tranType          String    @map("tran_type")               // New Business | Renewal | Endorsement | Cancellation | ...
+  invoiceAmount     Decimal?  @map("invoice_amount")      @db.Decimal(14, 2) // ≈ GWP/premium invoiced
+  brokerFee         Decimal?  @map("broker_fee")          @db.Decimal(14, 2)
+  brokerCommission  Decimal?  @map("broker_commission")   @db.Decimal(14, 2)
+  grossBrokerIncome Decimal?  @map("gross_broker_income") @db.Decimal(14, 2) // GBI — headline production
+  netBrokerIncome   Decimal?  @map("net_broker_income")   @db.Decimal(14, 2)
+  sourceFile        String?   @map("source_file")
+  importedAt        DateTime  @default(now()) @map("imported_at")
+
+  @@index([brokerName])
+  @@index([tranDate])
+  @@index([tranType])
+  @@map("broker_earnings")
+}
