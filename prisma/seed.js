@@ -22,22 +22,20 @@ const LEAD_SOURCES = [
   { label: 'Facebook', sortOrder: 5 },
 ];
 
-// Starter list of NZ commercial underwriters. defaultCommissionPct values are
-// placeholders — admin can edit each from /admin/insurers to match Gerrards'
-// actual agency terms.
+// Starter list of NZ commercial underwriters shown on the conversion form.
 const INSURERS = [
-  { label: 'NZI', defaultCommissionPct: 17.5, sortOrder: 1 },
-  { label: 'Vero', defaultCommissionPct: 17.5, sortOrder: 2 },
-  { label: 'QBE', defaultCommissionPct: 15.0, sortOrder: 3 },
-  { label: 'Ando', defaultCommissionPct: 17.5, sortOrder: 4 },
-  { label: 'AIG', defaultCommissionPct: 15.0, sortOrder: 5 },
-  { label: 'Berkshire Hathaway Specialty', defaultCommissionPct: 15.0, sortOrder: 6 },
-  { label: 'Chubb', defaultCommissionPct: 15.0, sortOrder: 7 },
-  { label: 'Delta Insurance', defaultCommissionPct: 20.0, sortOrder: 8 },
-  { label: 'Star Underwriting', defaultCommissionPct: 20.0, sortOrder: 9 },
-  { label: 'Vero Liability', defaultCommissionPct: 17.5, sortOrder: 10 },
-  { label: 'Zurich', defaultCommissionPct: 15.0, sortOrder: 11 },
-  { label: 'Other', defaultCommissionPct: 0, sortOrder: 99 },
+  { label: 'NZI', sortOrder: 1 },
+  { label: 'Vero', sortOrder: 2 },
+  { label: 'QBE', sortOrder: 3 },
+  { label: 'Ando', sortOrder: 4 },
+  { label: 'AIG', sortOrder: 5 },
+  { label: 'Berkshire Hathaway Specialty', sortOrder: 6 },
+  { label: 'Chubb', sortOrder: 7 },
+  { label: 'Delta Insurance', sortOrder: 8 },
+  { label: 'Star Underwriting', sortOrder: 9 },
+  { label: 'Vero Liability', sortOrder: 10 },
+  { label: 'Zurich', sortOrder: 11 },
+  { label: 'Other', sortOrder: 99 },
 ];
 
 async function main() {

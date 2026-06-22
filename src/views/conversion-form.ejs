@@ -19,12 +19,12 @@
     <% if (fromSubmission) { %>
     <p class="text-mid text-sm mt-1">From lead: <span class="font-medium"><%= fromSubmission.leadFirstName %> <%= fromSubmission.leadLastName %></span> — outcome will sync to GHL.</p>
     <% } else { %>
-    <p class="text-mid text-sm mt-1">Record a won or lost deal. Dollar figures are your estimate at bind.</p>
+    <p class="text-mid text-sm mt-1">Record a won or lost deal.</p>
     <% } %>
   </div>
 
   <form method="POST" action="/conversions/new" class="card p-6 sm:p-8 space-y-5"
-        x-data="conversionForm()">
+        x-data="{ outcome: '<%= v('outcome') %>' }">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="submit_token" value="<%= typeof submitToken !== 'undefined' ? submitToken : '' %>">
     <input type="hidden" name="submission_id" value="<%= v('submission_id') %>">
@@ -44,12 +44,12 @@
       <span class="block text-sm font-medium mb-1.5">Outcome *</span>
       <div class="grid grid-cols-2 gap-3">
         <label class="cursor-pointer">
-          <input type="radio" name="outcome" value="WON" class="sr-only peer" x-model="outcome" <%= v('outcome') === 'WON' ? 'checked' : '' %>>
+          <input type="radio" name="outcome" value="WON" class="sr-only" x-model="outcome" <%= v('outcome') === 'WON' ? 'checked' : '' %>>
           <div class="text-center py-3 rounded-lg border text-sm font-medium transition-all"
                :class="outcome === 'WON' ? 'border-brand bg-brand-light text-brand' : 'border-warm text-mid'">Won ✓</div>
         </label>
         <label class="cursor-pointer">
-          <input type="radio" name="outcome" value="LOST" class="sr-only peer" x-model="outcome" <%= v('outcome') === 'LOST' ? 'checked' : '' %>>
+          <input type="radio" name="outcome" value="LOST" class="sr-only" x-model="outcome" <%= v('outcome') === 'LOST' ? 'checked' : '' %>>
           <div class="text-center py-3 rounded-lg border text-sm font-medium transition-all"
                :class="outcome === 'LOST' ? 'border-red-400 bg-red-50 text-red-700' : 'border-warm text-mid'">Lost</div>
         </label>
@@ -85,11 +85,10 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label for="insurer_id" class="block text-sm font-medium mb-1.5">Insurer *</label>
-          <select id="insurer_id" name="insurer_id" class="input-field <%= err('insurer_id') ? 'error' : '' %>"
-                  x-model="insurerId" @change="onInsurerChange($event)">
-            <option value="" data-pct="0">Select...</option>
+          <select id="insurer_id" name="insurer_id" class="input-field <%= err('insurer_id') ? 'error' : '' %>">
+            <option value="">Select...</option>
             <% insurers.forEach(function(ins) { %>
-            <option value="<%= ins.id %>" data-pct="<%= ins.defaultCommissionPct %>" <%= v('insurer_id') === ins.id ? 'selected' : '' %>><%= ins.label %></option>
+            <option value="<%= ins.id %>" <%= v('insurer_id') === ins.id ? 'selected' : '' %>><%= ins.label %></option>
             <% }); %>
           </select>
           <% if (err('insurer_id')) { %><p class="text-red-600 text-xs mt-1"><%= err('insurer_id') %></p><% } %>
@@ -106,66 +105,25 @@
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
             <input type="text" inputmode="decimal" id="annual_premium" name="annual_premium" value="<%= v('annual_premium') %>"
-                   x-model="premium" class="input-field pl-7 <%= err('annual_premium') ? 'error' : '' %>" placeholder="0.00">
+                   class="input-field pl-7 <%= err('annual_premium') ? 'error' : '' %>" placeholder="0.00">
           </div>
           <% if (err('annual_premium')) { %><p class="text-red-600 text-xs mt-1"><%= err('annual_premium') %></p><% } %>
-        </div>
-        <div>
-          <label for="inception_date" class="block text-sm font-medium mb-1.5">Inception date</label>
-          <input type="date" id="inception_date" name="inception_date" value="<%= v('inception_date') %>" class="input-field">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="base_commission_pct" class="block text-sm font-medium mb-1.5">Commission %</label>
-          <div class="relative">
-            <input type="text" inputmode="decimal" id="base_commission_pct" name="base_commission_pct" value="<%= v('base_commission_pct') %>"
-                   x-model="pct" class="input-field pr-7" :placeholder="insurerPct ? insurerPct + ' (insurer default)' : 'auto from insurer'">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-mid text-sm">%</span>
-          </div>
-          <p class="text-mid text-xs mt-1">Leave blank to use the insurer’s default rate.</p>
         </div>
         <div>
           <label for="broker_fee" class="block text-sm font-medium mb-1.5">Broker fee (charged to client)</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
             <input type="text" inputmode="decimal" id="broker_fee" name="broker_fee" value="<%= v('broker_fee') %>"
-                   x-model="fee" class="input-field pl-7" placeholder="0.00">
+                   class="input-field pl-7" placeholder="0.00">
           </div>
         </div>
       </div>
 
-      <!-- Premium funding -->
-      <div>
-        <label class="flex items-center gap-2.5 cursor-pointer">
-          <input type="checkbox" name="premium_funded" x-model="funded" <%= v('premium_funded') ? 'checked' : '' %>
-                 class="w-4 h-4 rounded border-warm text-brand focus:ring-brand">
-          <span class="text-sm font-medium">Premium funding arranged</span>
-        </label>
-        <div x-show="funded" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-          <div>
-            <label for="funder" class="block text-sm font-medium mb-1.5">Funder</label>
-            <input type="text" id="funder" name="funder" value="<%= v('funder') %>" class="input-field" placeholder="e.g. Hunter Premium Funding">
-          </div>
-          <div>
-            <label for="funding_commission" class="block text-sm font-medium mb-1.5">Funding commission</label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
-              <input type="text" inputmode="decimal" id="funding_commission" name="funding_commission" value="<%= v('funding_commission') %>"
-                     x-model="funding" class="input-field pl-7" placeholder="0.00">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live brokerage estimate -->
-      <div class="bg-brand-light rounded-lg p-4 flex items-center justify-between">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <p class="text-xs text-mid uppercase tracking-wider">Estimated brokerage</p>
-          <p class="text-xs text-mid mt-0.5">premium × <span x-text="effPct().toFixed(2)"></span>% + fees</p>
+          <label for="inception_date" class="block text-sm font-medium mb-1.5">Inception date</label>
+          <input type="date" id="inception_date" name="inception_date" value="<%= v('inception_date') %>" class="input-field">
         </div>
-        <p class="text-2xl font-semibold text-brand">$<span x-text="brokerage().toLocaleString('en-NZ', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span></p>
       </div>
     </div>
 
@@ -202,33 +160,6 @@
 </div>
 
 <script>
-  function conversionForm() {
-    const n = (val) => { const x = parseFloat(String(val).replace(/[$,\s]/g, '')); return isFinite(x) ? x : 0; };
-    return {
-      outcome: '<%= v("outcome") %>',
-      insurerId: '<%= v("insurer_id") %>',
-      insurerPct: 0,
-      premium: '<%= v("annual_premium") %>',
-      pct: '<%= v("base_commission_pct") %>',
-      fee: '<%= v("broker_fee") %>',
-      funding: '<%= v("funding_commission") %>',
-      funded: <%= v('premium_funded') ? 'true' : 'false' %>,
-      init() {
-        const sel = document.getElementById('insurer_id');
-        if (sel && sel.selectedOptions[0]) this.insurerPct = n(sel.selectedOptions[0].dataset.pct);
-      },
-      onInsurerChange(e) {
-        const opt = e.target.selectedOptions[0];
-        this.insurerPct = opt ? n(opt.dataset.pct) : 0;
-      },
-      effPct() { return n(this.pct) > 0 ? n(this.pct) : this.insurerPct; },
-      brokerage() {
-        const base = n(this.premium) * this.effPct() / 100;
-        return base + n(this.fee) + (this.funded ? n(this.funding) : 0);
-      },
-    };
-  }
-
   // Double-submit guard (mirrors the lead form).
   (function () {
     var form = document.querySelector('form[action="/conversions/new"]');
