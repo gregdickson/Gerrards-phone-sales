@@ -5,8 +5,21 @@
 // Usage (in-container):  node scripts/import-earnings.js /tmp/earnings.json
 const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
+const zlib = require('zlib');
 
 const prisma = new PrismaClient();
+
+// Accepts plain JSON, base64-JSON, or base64-gzipped-JSON — so the payload can
+// be piped in as a compact base64 blob without relying on container shell tools.
+function readRows(path) {
+  const buf = fs.readFileSync(path);
+  if (buf.slice(0, 64).toString('utf8').trimStart().startsWith('[')) {
+    return JSON.parse(buf.toString('utf8'));
+  }
+  let decoded = Buffer.from(buf.toString('utf8').trim(), 'base64');
+  if (decoded[0] === 0x1f && decoded[1] === 0x8b) decoded = zlib.gunzipSync(decoded);
+  return JSON.parse(decoded.toString('utf8'));
+}
 
 function mapRow(r) {
   return {
@@ -26,8 +39,8 @@ function mapRow(r) {
 
 (async () => {
   const path = process.argv[2];
-  if (!path) throw new Error('Usage: node scripts/import-earnings.js <earnings.json>');
-  const rows = JSON.parse(fs.readFileSync(path, 'utf8'));
+  if (!path) throw new Error('Usage: node scripts/import-earnings.js <file>  (JSON or base64[-gzip])');
+  const rows = readRows(path);
   console.log(`Importing ${rows.length} earnings transactions...`);
 
   let done = 0;
