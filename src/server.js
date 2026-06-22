@@ -72,9 +72,11 @@ async function build() {
   await fastify.register(require('./routes/auth'));
   await fastify.register(require('./routes/landing'));
   await fastify.register(require('./routes/submissions'));
+  await fastify.register(require('./routes/conversions'));
   await fastify.register(require('./routes/admin/staff'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/categories'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/lead-sources'), { prefix: '/admin' });
+  await fastify.register(require('./routes/admin/insurers'), { prefix: '/admin' });
   await fastify.register(require('./routes/admin/submissions'), { prefix: '/admin' });
 
   return fastify;

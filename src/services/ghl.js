@@ -91,6 +91,16 @@ async function createOpportunity({ pipelineId, stageId, contactId, assignedTo, n
   return result;
 }
 
+// Update an existing opportunity — used to write a conversion outcome back to
+// GHL (status won/lost + the estimated brokerage as monetaryValue).
+async function updateOpportunity(opportunityId, { status, monetaryValue, name }) {
+  const body = {};
+  if (status) body.status = status;                 // 'won' | 'lost' | 'open' | 'abandoned'
+  if (monetaryValue != null) body.monetaryValue = monetaryValue;
+  if (name) body.name = name;
+  return ghlFetch('PUT', `/opportunities/${opportunityId}`, body);
+}
+
 async function listUsers() {
   return ghlFetch('GET', `/users/?locationId=${config.GHL_LOCATION_ID}`);
 }
@@ -100,5 +110,6 @@ module.exports = {
   addTag,
   createNote,
   createOpportunity,
+  updateOpportunity,
   listUsers,
 };

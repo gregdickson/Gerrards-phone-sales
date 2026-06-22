@@ -26,6 +26,7 @@
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Category</th>
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Status</th>
           <th class="text-left px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Date</th>
+          <th class="text-right px-5 py-3 font-medium text-mid text-xs uppercase tracking-wider">Outcome</th>
         </tr>
       </thead>
       <tbody>
@@ -45,6 +46,9 @@
             "><%= sub.status %></span>
           </td>
           <td class="px-5 py-3.5 text-mid"><%= sub.createdAt.toLocaleDateString('en-NZ') %></td>
+          <td class="px-5 py-3.5 text-right">
+            <a href="/conversions/new?from=<%= sub.id %>" class="text-brand hover:underline text-sm font-medium">Convert &rarr;</a>
+          </td>
         </tr>
         <% }); %>
       </tbody>
