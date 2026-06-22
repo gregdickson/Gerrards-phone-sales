@@ -2,30 +2,22 @@
   // small helpers to keep the markup readable
   const v = (k, d = '') => (typeof values !== 'undefined' && values[k] != null && values[k] !== '') ? values[k] : d;
   const err = (k) => (typeof errors !== 'undefined' && errors[k]) ? errors[k] : null;
-  const LOST_LABELS = {
-    WENT_DIRECT: 'Went direct to insurer',
-    PRICE: 'Price / premium too high',
-    INCUMBENT_BROKER: 'Stayed with incumbent broker',
-    NO_APPETITE: 'No insurer appetite (couldn’t place)',
-    CUSTOMER_WITHDREW: 'Customer withdrew / not proceeding',
-    OTHER: 'Other',
-  };
   const BIZ_LABELS = { NEW_BUSINESS: 'New business', RENEWAL: 'Renewal' };
 %>
 <div class="max-w-2xl mx-auto animate-in">
   <div class="mb-6">
     <a href="/my-conversions" class="text-sm text-mid hover:text-brand transition-colors">&larr; My conversions</a>
-    <h1 class="font-serif text-2xl italic mt-2" style="color: var(--brand-dark);">Log a Conversion</h1>
+    <h1 class="font-serif text-2xl italic mt-2" style="color: var(--brand-dark);">Log a Won Deal</h1>
     <% if (fromSubmission) { %>
-    <p class="text-mid text-sm mt-1">From lead: <span class="font-medium"><%= fromSubmission.leadFirstName %> <%= fromSubmission.leadLastName %></span> — outcome will sync to GHL.</p>
+    <p class="text-mid text-sm mt-1">From lead: <span class="font-medium"><%= fromSubmission.leadFirstName %> <%= fromSubmission.leadLastName %></span> — marks the GHL opportunity won.</p>
     <% } else { %>
-    <p class="text-mid text-sm mt-1">Record a won or lost deal.</p>
+    <p class="text-mid text-sm mt-1">Record a won deal. (Lost deals are tracked in GHL.)</p>
     <% } %>
   </div>
 
-  <form method="POST" action="/conversions/new" class="card p-6 sm:p-8 space-y-5"
-        x-data="{ outcome: '<%= v('outcome') %>' }">
+  <form method="POST" action="/conversions/new" class="card p-6 sm:p-8 space-y-5">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="outcome" value="WON">
     <input type="hidden" name="submit_token" value="<%= typeof submitToken !== 'undefined' ? submitToken : '' %>">
     <input type="hidden" name="submission_id" value="<%= v('submission_id') %>">
     <input type="hidden" name="ghl_contact_id" value="<%= v('ghl_contact_id') %>">
@@ -39,121 +31,69 @@
       <% if (err('client_name')) { %><p class="text-red-600 text-xs mt-1"><%= err('client_name') %></p><% } %>
     </div>
 
-    <!-- Outcome toggle -->
-    <div>
-      <span class="block text-sm font-medium mb-1.5">Outcome *</span>
-      <div class="grid grid-cols-2 gap-3">
-        <label class="cursor-pointer">
-          <input type="radio" name="outcome" value="WON" class="sr-only" x-model="outcome" <%= v('outcome') === 'WON' ? 'checked' : '' %>>
-          <div class="text-center py-3 rounded-lg border text-sm font-medium transition-all"
-               :class="outcome === 'WON' ? 'border-brand bg-brand-light text-brand' : 'border-warm text-mid'">Won ✓</div>
-        </label>
-        <label class="cursor-pointer">
-          <input type="radio" name="outcome" value="LOST" class="sr-only" x-model="outcome" <%= v('outcome') === 'LOST' ? 'checked' : '' %>>
-          <div class="text-center py-3 rounded-lg border text-sm font-medium transition-all"
-               :class="outcome === 'LOST' ? 'border-red-400 bg-red-50 text-red-700' : 'border-warm text-mid'">Lost</div>
-        </label>
-      </div>
-      <% if (err('outcome')) { %><p class="text-red-600 text-xs mt-1"><%= err('outcome') %></p><% } %>
-    </div>
-
-    <!-- ===================== WON ===================== -->
-    <div x-show="outcome === 'WON'" x-cloak class="space-y-5 border-t border-warm pt-5">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="business_type" class="block text-sm font-medium mb-1.5">Business type *</label>
-          <select id="business_type" name="business_type" class="input-field <%= err('business_type') ? 'error' : '' %>">
-            <option value="">Select...</option>
-            <% businessTypes.forEach(function(bt) { %>
-            <option value="<%= bt %>" <%= v('business_type') === bt ? 'selected' : '' %>><%= BIZ_LABELS[bt] %></option>
-            <% }); %>
-          </select>
-          <% if (err('business_type')) { %><p class="text-red-600 text-xs mt-1"><%= err('business_type') %></p><% } %>
-        </div>
-        <div>
-          <label for="insurance_category_id" class="block text-sm font-medium mb-1.5">Class of business *</label>
-          <select id="insurance_category_id" name="insurance_category_id" class="input-field <%= err('insurance_category_id') ? 'error' : '' %>">
-            <option value="">Select...</option>
-            <% categories.forEach(function(c) { %>
-            <option value="<%= c.id %>" <%= v('insurance_category_id') === c.id ? 'selected' : '' %>><%= c.label %></option>
-            <% }); %>
-          </select>
-          <% if (err('insurance_category_id')) { %><p class="text-red-600 text-xs mt-1"><%= err('insurance_category_id') %></p><% } %>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="insurer_id" class="block text-sm font-medium mb-1.5">Insurer *</label>
-          <select id="insurer_id" name="insurer_id" class="input-field <%= err('insurer_id') ? 'error' : '' %>">
-            <option value="">Select...</option>
-            <% insurers.forEach(function(ins) { %>
-            <option value="<%= ins.id %>" <%= v('insurer_id') === ins.id ? 'selected' : '' %>><%= ins.label %></option>
-            <% }); %>
-          </select>
-          <% if (err('insurer_id')) { %><p class="text-red-600 text-xs mt-1"><%= err('insurer_id') %></p><% } %>
-        </div>
-        <div>
-          <label for="policies_bound" class="block text-sm font-medium mb-1.5">Policies bound</label>
-          <input type="number" min="1" id="policies_bound" name="policies_bound" value="<%= v('policies_bound', '1') %>" class="input-field">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="annual_premium" class="block text-sm font-medium mb-1.5">Annual premium (GWP) *</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
-            <input type="text" inputmode="decimal" id="annual_premium" name="annual_premium" value="<%= v('annual_premium') %>"
-                   class="input-field pl-7 <%= err('annual_premium') ? 'error' : '' %>" placeholder="0.00">
-          </div>
-          <% if (err('annual_premium')) { %><p class="text-red-600 text-xs mt-1"><%= err('annual_premium') %></p><% } %>
-        </div>
-        <div>
-          <label for="broker_fee" class="block text-sm font-medium mb-1.5">Broker fee (charged to client)</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
-            <input type="text" inputmode="decimal" id="broker_fee" name="broker_fee" value="<%= v('broker_fee') %>"
-                   class="input-field pl-7" placeholder="0.00">
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="inception_date" class="block text-sm font-medium mb-1.5">Inception date</label>
-          <input type="date" id="inception_date" name="inception_date" value="<%= v('inception_date') %>" class="input-field">
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================== LOST ===================== -->
-    <div x-show="outcome === 'LOST'" x-cloak class="space-y-5 border-t border-warm pt-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label for="lost_reason" class="block text-sm font-medium mb-1.5">Reason lost *</label>
-        <select id="lost_reason" name="lost_reason" class="input-field <%= err('lost_reason') ? 'error' : '' %>">
+        <label for="business_type" class="block text-sm font-medium mb-1.5">Business type *</label>
+        <select id="business_type" name="business_type" class="input-field <%= err('business_type') ? 'error' : '' %>">
           <option value="">Select...</option>
-          <% lostReasons.forEach(function(r) { %>
-          <option value="<%= r %>" <%= v('lost_reason') === r ? 'selected' : '' %>><%= LOST_LABELS[r] %></option>
+          <% businessTypes.forEach(function(bt) { %>
+          <option value="<%= bt %>" <%= v('business_type') === bt ? 'selected' : '' %>><%= BIZ_LABELS[bt] %></option>
           <% }); %>
         </select>
-        <% if (err('lost_reason')) { %><p class="text-red-600 text-xs mt-1"><%= err('lost_reason') %></p><% } %>
+        <% if (err('business_type')) { %><p class="text-red-600 text-xs mt-1"><%= err('business_type') %></p><% } %>
       </div>
       <div>
-        <label for="competitor" class="block text-sm font-medium mb-1.5">Who won it? (optional)</label>
-        <input type="text" id="competitor" name="competitor" value="<%= v('competitor') %>" class="input-field" placeholder="Competitor / incumbent broker">
+        <label for="insurance_category_id" class="block text-sm font-medium mb-1.5">Class of business *</label>
+        <select id="insurance_category_id" name="insurance_category_id" class="input-field <%= err('insurance_category_id') ? 'error' : '' %>">
+          <option value="">Select...</option>
+          <% categories.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= v('insurance_category_id') === c.id ? 'selected' : '' %>><%= c.label %></option>
+          <% }); %>
+        </select>
+        <% if (err('insurance_category_id')) { %><p class="text-red-600 text-xs mt-1"><%= err('insurance_category_id') %></p><% } %>
       </div>
     </div>
 
-    <!-- Notes (both paths) -->
-    <div x-show="outcome" x-cloak>
-      <label for="notes" class="block text-sm font-medium mb-1.5">Notes</label>
-      <textarea id="notes" name="notes" rows="3" class="input-field"><%= v('notes') %></textarea>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="insurer_id" class="block text-sm font-medium mb-1.5">Insurer *</label>
+        <select id="insurer_id" name="insurer_id" class="input-field <%= err('insurer_id') ? 'error' : '' %>">
+          <option value="">Select...</option>
+          <% insurers.forEach(function(ins) { %>
+          <option value="<%= ins.id %>" <%= v('insurer_id') === ins.id ? 'selected' : '' %>><%= ins.label %></option>
+          <% }); %>
+        </select>
+        <% if (err('insurer_id')) { %><p class="text-red-600 text-xs mt-1"><%= err('insurer_id') %></p><% } %>
+      </div>
+      <div>
+        <label for="policies_bound" class="block text-sm font-medium mb-1.5">Policies bound</label>
+        <input type="number" min="1" id="policies_bound" name="policies_bound" value="<%= v('policies_bound', '1') %>" class="input-field">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="annual_premium" class="block text-sm font-medium mb-1.5">Annual premium (GWP) *</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
+          <input type="text" inputmode="decimal" id="annual_premium" name="annual_premium" value="<%= v('annual_premium') %>"
+                 class="input-field pl-7 <%= err('annual_premium') ? 'error' : '' %>" placeholder="0.00">
+        </div>
+        <% if (err('annual_premium')) { %><p class="text-red-600 text-xs mt-1"><%= err('annual_premium') %></p><% } %>
+      </div>
+      <div>
+        <label for="broker_fee" class="block text-sm font-medium mb-1.5">Broker fee (charged to client)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mid text-sm">$</span>
+          <input type="text" inputmode="decimal" id="broker_fee" name="broker_fee" value="<%= v('broker_fee') %>"
+                 class="input-field pl-7" placeholder="0.00">
+        </div>
+      </div>
     </div>
 
     <div class="pt-2">
       <button type="submit" id="submit-conversion-btn" class="btn-primary w-full py-3 disabled:opacity-60 disabled:cursor-not-allowed">
-        <span data-label>Log conversion</span>
+        <span data-label>Log won deal</span>
       </button>
     </div>
   </form>
